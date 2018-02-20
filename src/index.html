@@ -1,0 +1,100 @@
+<html>
+<head>
+    <title>Soy Ağacım</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="E-Devlet alt-üst soy bilgisi sorgulama uygulamasından aldığınız çıktıyı görselleştirin, soy ağacınız daha anlaşılır olsun."/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.378/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.378/pdf.worker.min.js"></script>    
+</head>
+<body>
+    <div id="preloader" class="preloader" style="background-color: transparent">
+            <div class="inner">
+                <!-- Loading spinner -->
+                <div class="preloader-spinner themed-background"></div>
+            </div>
+        </div>
+    <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h1 class="display-4">Soy Ağacı Görselinizi Oluşturun</h1>
+        <p class="lead">E-Devlet alt-üst soy bilgisi sorgulama uygulamasından aldığınız çıktıyı görselleştirin, soy ağacınız daha anlaşılır
+            olsun.
+        </p>
+    </div>
+
+    <div class="container">
+        <div class="card-deck mb-3 text-center">
+            <div class="card mb-6 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">1. Neden?</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">Anlaşılır</h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Annesinin Annesinin Babasının Annesinin Babası !?</li>
+                        <li>Buna benzer ifadelerle dolu bir tablo sizce de biraz karışık değil mi?</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card mb-6 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">2. Nasıl?</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">Kolay</h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Alt-üst soy bilgisi sorgulama ekranından "Yazdır" tuşuyla aldığınız PDF dosyasını bu sayfaya yüklemeniz
+                            yeterli.
+                        </li>
+                    </ul>
+                    <button id="btnUpload" type="button" class="btn btn-lg btn-block btn-primary">Şimdi Yükle</button>
+                    <input type="file" id="inputSourceFile" style="display: none">
+                </div>
+            </div>
+        </div>
+        <div id="network-info" class="px-3 py-3" style="display: none">
+            <div class="row">
+                <div class="col-sm-11"><small>*Grafiği yakınlaştırıp, uzaklaştırabilir ve hareket ettirebilirsiniz.</small></div>
+                <div class="col-sm-1">
+                    <a id="btnDownload" class="btn btn-primary" href="#" role="button">İndir</a>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-6 box-shadow" id="family-network" style="display: none">
+        </div>
+        <div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+            <h2 class="display-5">Sık Sorulan Sorular</h2>
+        </div>
+        <div class="px-3 py-3 pb-md-4 mx-auto">
+            <ul style="list-style: none">
+                <li>
+                    <h4>1. Bilgilerimi kaydediyor musunuz?</h4>
+                    <p>Hayır. Soy ağacı görselleştirim işlemi kendi internet tarayıcınız üzerinde gerçekleşir ve herhangi bir
+                        uzak sunucuya soy bilgilerinizle ilgili aktarım yapılmaz.</p>
+                </li>
+                <li>
+                    <h4>2. Bilgilerimin kaydedilmediğine inanmıyorum!</h4>
+                    <p>Uygulama kaynak kodunu <a href="https://github.com/okul101/SoyAgaci" target="blank">https://github.com/okul101/SoyAgaci</a> adresinde inceleyebilirsiniz.</p>
+                </li>
+            </ul>
+        </div>
+
+        <footer class="pt-4 my-md-5 pt-md-5 border-top">
+            <div class="row">
+                <div class="col-12 col-md">
+                    <small class="d-block mb-3 text-muted">&copy; 2017-2018 <a href="https://okul101.com" target="blank">okul101</a></small>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <div id="export-container" style="visibility: hidden; width: 300vw; position: absolute; top: -300vw; left: -300vw">
+    </div>
+    <script type="text/javascript" src="main.js"></script>
+</body>
+</html>
