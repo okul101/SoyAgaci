@@ -183,7 +183,7 @@ $(document).ready(function () {
         fileReader.readAsArrayBuffer(file);
     });
 
-    function drawNetwork(element, nodes, edges, height) {
+    function drawNetwork(element, nodes, edges, width, height) {
         var container = document.getElementById(element);
         var data = {
             nodes: nodes,
