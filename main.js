@@ -56,13 +56,14 @@ $(document).ready(function () {
                                 id: cells[0],
                                 sira: cells[0],
                                 cinsiyet: cells[1],
+                                olumTarihi: cells[cells.length - 1],
                                 durumu: cells[cells.length - 2],
                                 medeniHali: cells[cells.length - 3],
                                 ciltHaneBireySiraNo: cells[cells.length - 4],
                                 mahalleKoy: cells[cells.length - 5],
                                 ilce: cells[cells.length - 6],
                                 il: cells[cells.length - 7],
-                                dogumTarigi: cells[cells.length - 8],
+                                dogumTarihi: cells[cells.length - 8],
                                 dogumYeri: cells[cells.length - 9],
                                 anaAdi: cells[cells.length - 10],
                                 babaAdi: cells[cells.length - 11],
@@ -166,10 +167,10 @@ $(document).ready(function () {
                         j++;
                     }
 
-                    drawNetwork('family-network', nodes, edges);
+                    drawNetwork('family-network', nodes, edges, '500px');
                     $("#family-network").show();
                     $("#network-info").show();
-                    exportedNetwork = drawNetwork('export-container', nodes, edges);
+                    exportedNetwork = drawNetwork('export-container', nodes, edges, '1000px');
                     $("#preloader").hide();
                     window.scrollTo(0, $("#family-network").offset().top - 100)
                 });
@@ -182,7 +183,7 @@ $(document).ready(function () {
         fileReader.readAsArrayBuffer(file);
     });
 
-    function drawNetwork(element, nodes, edges) {
+    function drawNetwork(element, nodes, edges, height) {
         var container = document.getElementById(element);
         var data = {
             nodes: nodes,
@@ -190,6 +191,8 @@ $(document).ready(function () {
         };
 
         var options = {
+            width: '100%',
+            height: height,
             interaction: {
                 dragNodes: false,
             },
@@ -198,6 +201,7 @@ $(document).ready(function () {
                 size: 36,
                 font: {
                     size: 14,
+                    multi: 'md'
                 },
                 borderWidth: 0,
                 widthConstraint: {
@@ -231,7 +235,7 @@ $(document).ready(function () {
     function createNodesAndEdges(person, people, nodes, edges) {
         var targets = [];
         if (person.yakinlik.endsWith("Annesi") || person.yakinlik.endsWith("Babası")) {
-            nodes.push({ id: person.id, label: person.adi + "\n(" + person.dogumYeri + ")", level: person.yakinlik.split(' ').length, yakinlik: person.yakinlik });
+            nodes.push({ id: person.id, label: createLabel(person.adi, person.dogumYeri, person.dogumTarihi, person.olumTarihi), level: person.yakinlik.split(' ').length, yakinlik: person.yakinlik });
             var postFix = "nin";
             if (person.yakinlik.endsWith("ı")) {
                 postFix = "nın";
@@ -242,7 +246,7 @@ $(document).ready(function () {
             var father = findPersonByRelation(people, targetRelation);
             var fatherId = 0;
             if (father == null) {
-                nodes.push({ id: targetRelation, label: person.babaAdi, level: targetRelation.split(' ').length, yakinlik: targetRelation });
+                nodes.push({ id: targetRelation, label: createLabel(person.babaAdi), level: targetRelation.split(' ').length, yakinlik: targetRelation });
                 edges.push({ from: targetRelation, to: person.id, yakinlik: targetRelation });
                 fatherId = targetRelation;
             }
@@ -255,7 +259,7 @@ $(document).ready(function () {
             targetRelation = person.yakinlik + postFix + " Annesi";
             var mother = findPersonByRelation(people, targetRelation);
             if (mother == null) {
-                nodes.push({ id: targetRelation, label: person.anaAdi, level: targetRelation.split(' ').length, yakinlik: targetRelation });
+                nodes.push({ id: targetRelation, label: createLabel(person.anaAdi), level: targetRelation.split(' ').length, yakinlik: targetRelation });
                 edges.push({ from: targetRelation, to: fatherId, yakinlik: targetRelation });
             }
             else {
@@ -263,13 +267,13 @@ $(document).ready(function () {
             }
         }
         else if (person.yakinlik == "Kendisi") {
-            nodes.push({ id: person.id, label: person.adi + "\n(" + person.dogumYeri + ")", level: 0, yakinlik: person.yakinlik });
+            nodes.push({ id: person.id, label: createLabel(person.adi, person.dogumYeri, person.dogumTarihi, person.olumTarihi), level: 0, yakinlik: person.yakinlik });
             // Babasını bul ve bağ oluştur
             var targetRelation = "Babası";
             var father = findPersonByRelation(people, targetRelation);
             var fatherId = 0;
             if (father == null) {
-                nodes.push({ id: targetRelation, label: person.babaAdi, level: targetRelation.split(' ').length, yakinlik: targetRelation });
+                nodes.push({ id: targetRelation, label: createLabel(person.babaAdi), level: targetRelation.split(' ').length, yakinlik: targetRelation });
                 edges.push({ from: targetRelation, to: person.id, yakinlik: targetRelation });
                 fatherId = targetRelation;
             }
@@ -282,7 +286,7 @@ $(document).ready(function () {
             targetRelation = "Annesi";
             var mother = findPersonByRelation(people, targetRelation);
             if (mother == null) {
-                nodes.push({ id: targetRelation, label: person.anaAdi, level: targetRelation.split(' ').length, yakinlik: targetRelation });
+                nodes.push({ id: targetRelation, label: createLabel(person.anaAdi), level: targetRelation.split(' ').length, yakinlik: targetRelation });
                 edges.push({ from: targetRelation, to: fatherId, yakinlik: targetRelation });
             }
             else {
@@ -290,7 +294,7 @@ $(document).ready(function () {
             }
         }
         else {
-            nodes.push({ id: person.id, label: person.adi + "\n(" + person.dogumYeri + ")", level: -1 * person.yakinlik.split(' ').length, yakinlik: person.yakinlik });
+            nodes.push({ id: person.id, label: createLabel(person.adi, person.dogumYeri, person.dogumTarihi, person.olumTarihi), level: -1 * person.yakinlik.split(' ').length, yakinlik: person.yakinlik });
 
         }
     }
@@ -355,5 +359,25 @@ $(document).ready(function () {
 
     function isEndOfRow(i, textItems) {
         return isLifeStatus(textItems[i - 1].str) && (isDate(textItems[i].str) || textItems[i].str == "-");
+    }
+
+    function createLabel(name, birthPlace, dateOfBirth, dateOfDeath){
+        var label = "*" + name + "*";
+        if(!!birthPlace && birthPlace != "-"){
+            label += "\n" + birthPlace + "";
+        }
+        if(!!dateOfBirth  && dateOfBirth != "-"){
+            var comps = dateOfBirth.split('/');
+            label += "\n(" + comps[comps.length - 1];
+
+            if(!!dateOfDeath && dateOfDeath != "-"){
+                comps = dateOfDeath.split('/')
+                label += "-" + comps[comps.length - 1];
+            }
+
+            label += ")";
+        }
+
+        return label;
     }
 });
