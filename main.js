@@ -150,15 +150,25 @@ $(document).ready(function () {
                     var fatherGroupIndex = 0;
                     var fatherGroupOffset = 0;
                     var fatherGroupStart = 0;
+                    var motherLevels = [0];
+                    var fatherLevels = [0];
+
                     for (var i = 0; i < nodes.length; i++) {
                         if (currentLevel != nodes[i].level) {
                             j = 0;
                             currentLevel = nodes[i].level;
+                            motherLevels.push(0);
+                            fatherLevels.push(0);
                         }
                         if (nodes[i].group == "anne") {
                             if(j * 150 > fatherGroupStart){
                                 fatherGroupStart = j * 150;
                             }
+
+                            motherLevels[currentLevel]++;
+                        }
+                        else{
+                            fatherLevels[currentLevel]++;
                         }
 
                         j++;
@@ -166,7 +176,7 @@ $(document).ready(function () {
 
                     fatherGroupStart += 200;
                     currentLevel = 0;
-
+                    j = 0;
                     for (var i = 0; i < nodes.length; i++) {
                         if (currentLevel != nodes[i].level) {
                             j = 0;
@@ -184,6 +194,31 @@ $(document).ready(function () {
                         nodes[i].y = (nodes[i].level + 1) * 100;
                         j++;
                     }
+
+                    j = 0;
+                    currentLevel = 0;
+                    var maxMotherLevelLength = motherLevels.slice(0).sort(function(a, b){return a - b})[motherLevels.length - 1];
+                    var maxFatherLevelLength = fatherLevels.slice(0).sort(function(a, b){return a - b})[fatherLevels.length - 1];
+                    for (var i = 0; i < nodes.length; i++) {
+                        if (currentLevel != nodes[i].level) {
+                            j = 0;
+                            currentLevel = nodes[i].level;
+                        }
+                        if (nodes[i].group == "anne") {
+                            var levelLength = motherLevels[currentLevel];
+                            if(levelLength != maxMotherLevelLength){
+                                //adjust x
+                                nodes[i].x += 150 * (maxMotherLevelLength - levelLength) / 2;
+                            }
+                        }
+                        else{
+                            var levelLength = fatherLevels[currentLevel];
+                            if(levelLength != maxFatherLevelLength){
+                                //adjust x
+                                nodes[i].x += 150 * (maxFatherLevelLength - levelLength) / 2;
+                            }
+                        }
+                     }
 
                     drawNetwork('family-network', nodes, edges, '500px');
                     $("#family-network").show();
