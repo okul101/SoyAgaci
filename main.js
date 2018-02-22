@@ -27,205 +27,13 @@ $(document).ready(function () {
                 }
 
                 Promise.all(pagesPromises).then(function (pageItems) {
-                    var people = [];
-                    var textItems = [];
-                    for (var i = 0; i < pageItems.length; i++) {
-                        textItems = textItems.concat(pageItems[i]);
+                    try {
+                        processPdfAndDraw(pageItems);
                     }
-                    textItems = textItems.filter(function (value) {
-                        return value.str != " ";
-                    });
-
-                    for (var i = 0; i < textItems.length; i++) {
-                        // satır başlangıcını tespit et
-                        if (isNewRow(i, textItems)) {
-                            // satır sonunu bulana kadar devam et
-                            var cells = [];
-                            cells.push(textItems[i].str);
-                            var j = 1;
-                            while (!isEndOfRow(i + j, textItems) && i + j < textItems.length) {
-                                if (textItems[i + j].str != "KÖYÜ" && textItems[i + j].str != "MAHALLESİ") {
-                                    cells.push(textItems[i + j].str);
-                                }
-                                j++;
-                            }
-                            cells.push(textItems[i + j].str);
-                            i = i + j;
-
-                            var person = {
-                                id: cells[0],
-                                sira: cells[0],
-                                cinsiyet: cells[1],
-                                olumTarihi: cells[cells.length - 1],
-                                durumu: cells[cells.length - 2],
-                                medeniHali: cells[cells.length - 3],
-                                ciltHaneBireySiraNo: cells[cells.length - 4],
-                                mahalleKoy: cells[cells.length - 5],
-                                ilce: cells[cells.length - 6],
-                                il: cells[cells.length - 7],
-                                dogumTarihi: cells[cells.length - 8],
-                                dogumYeri: cells[cells.length - 9],
-                                anaAdi: cells[cells.length - 10],
-                                babaAdi: cells[cells.length - 11],
-                                soyadi: cells[cells.length - 12],
-                                adi: cells[cells.length - 13],
-                                yakinlik: "",
-                                level: 0
-                            }
-
-                            for (var k = 0; k < cells.length - 15; k++) {
-                                person.yakinlik += " " + cells[2 + k];
-                            }
-
-                            person.yakinlik = person.yakinlik.trim();
-                            people.push(person);
-                        }
+                    catch (err) {
+                        $("#preloader").hide();
+                        alert("Üzgünüz, dosyanız okunamadı");
                     }
-
-                    var nodes = [];
-                    var edges = [];
-                    for (var i = 0; i < people.length; i++) {
-                        createNodesAndEdges(people[i], people, nodes, edges)
-                    }
-
-                    // adjust level
-                    var maxLevel = 0;
-                    var minLevel = 0;
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (nodes[i].level > maxLevel) {
-                            maxLevel = nodes[i].level;
-                        }
-                        if (nodes[i].level < minLevel) {
-                            minLevel = nodes[i].level;
-                        }
-                    }
-
-                    nodes.forEach(function (node) {
-                        node.level = maxLevel - node.level;
-                        if (node.yakinlik.startsWith("Babası")) {
-                            node.group = "baba";
-                        }
-                        else if (node.yakinlik.startsWith("Annesi")) {
-                            node.group = "anne";
-                        }
-                        else {
-                            node.group = "baba";
-                        }
-                    });
-
-                    edges.forEach(function (edge) {
-                        if (edge.yakinlik.startsWith("Annesi")) {
-                            edge.color = { color: "#ff8080" };
-                        }
-                    });
-
-                    nodes = nodes.sort(function (node1, node2) {
-                        if (node1.level != node2.level) {
-                            return node1.level - node2.level;
-                        }
-                        else {
-                            var yakinlikComps1 = node1.yakinlik.split(' ');
-                            var yakinlikComps2 = node2.yakinlik.split(' ');
-                            for (var i = 0; i < yakinlikComps1.length; i++) {
-                                if (yakinlikComps1[i].startsWith("Annesi") && (yakinlikComps2[i].startsWith("Babası"))) {
-                                    return -1;
-                                }
-                                else if (yakinlikComps1[i].startsWith("Babası") && (yakinlikComps2[i].startsWith("Annesi"))) {
-                                    return 1;
-                                }
-                                else if (yakinlikComps1[i].startsWith("Kızı") && (yakinlikComps2[i].startsWith("Oğlu"))) {
-                                    return -1;
-                                }
-                                else if (yakinlikComps1[i].startsWith("Oğlu") && (yakinlikComps2[i].startsWith("Kızı"))) {
-                                    return 1;
-                                }
-                            }
-
-                            return 0;
-                        }
-                    });
-
-                    var j = 0;
-                    var currentLevel = 0;
-                    var fatherGroupIndex = 0;
-                    var fatherGroupOffset = 0;
-                    var fatherGroupStart = 0;
-                    var motherLevels = [0];
-                    var fatherLevels = [0];
-
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (currentLevel != nodes[i].level) {
-                            j = 0;
-                            currentLevel = nodes[i].level;
-                            motherLevels.push(0);
-                            fatherLevels.push(0);
-                        }
-                        if (nodes[i].group == "anne") {
-                            if(j * 150 > fatherGroupStart){
-                                fatherGroupStart = j * 150;
-                            }
-
-                            motherLevels[currentLevel]++;
-                        }
-                        else{
-                            fatherLevels[currentLevel]++;
-                        }
-
-                        j++;
-                    }
-
-                    fatherGroupStart += 200;
-                    currentLevel = 0;
-                    j = 0;
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (currentLevel != nodes[i].level) {
-                            j = 0;
-                            fatherGroupIndex = 0;
-                            currentLevel = nodes[i].level;
-                        }
-                        nodes[i].x = j * 150;
-                        if (nodes[i].group == "baba") {
-                            if (fatherGroupIndex == 0) {
-                                fatherGroupOffset = fatherGroupStart - (j * 150);
-                            }
-                            nodes[i].x = fatherGroupOffset + (j * 150);
-                            fatherGroupIndex++;
-                        }
-                        nodes[i].y = (nodes[i].level + 1) * 100;
-                        j++;
-                    }
-
-                    j = 0;
-                    currentLevel = 0;
-                    var maxMotherLevelLength = motherLevels.slice(0).sort(function(a, b){return a - b})[motherLevels.length - 1];
-                    var maxFatherLevelLength = fatherLevels.slice(0).sort(function(a, b){return a - b})[fatherLevels.length - 1];
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (currentLevel != nodes[i].level) {
-                            j = 0;
-                            currentLevel = nodes[i].level;
-                        }
-                        if (nodes[i].group == "anne") {
-                            var levelLength = motherLevels[currentLevel];
-                            if(levelLength != maxMotherLevelLength){
-                                //adjust x
-                                nodes[i].x += 150 * (maxMotherLevelLength - levelLength) / 2;
-                            }
-                        }
-                        else{
-                            var levelLength = fatherLevels[currentLevel];
-                            if(levelLength != maxFatherLevelLength){
-                                //adjust x
-                                nodes[i].x += 150 * (maxFatherLevelLength - levelLength) / 2;
-                            }
-                        }
-                     }
-
-                    drawNetwork('family-network', nodes, edges, '500px');
-                    $("#family-network").show();
-                    $("#network-info").show();
-                    exportedNetwork = drawNetwork('export-container', nodes, edges, '1000px');
-                    $("#preloader").hide();
-                    window.scrollTo(0, $("#family-network").offset().top - 100)
                 });
 
             }, function (reason) {
@@ -235,6 +43,208 @@ $(document).ready(function () {
         };
         fileReader.readAsArrayBuffer(file);
     });
+
+    function processPdfAndDraw(pageItems) {
+        var people = [];
+        var textItems = [];
+        for (var i = 0; i < pageItems.length; i++) {
+            textItems = textItems.concat(pageItems[i]);
+        }
+        textItems = textItems.filter(function (value) {
+            return value.str != " ";
+        });
+
+        for (var i = 0; i < textItems.length; i++) {
+            // satır başlangıcını tespit et
+            if (isNewRow(i, textItems)) {
+                // satır sonunu bulana kadar devam et
+                var cells = [];
+                cells.push(textItems[i].str);
+                var j = 1;
+                while (!isEndOfRow(i + j, textItems) && i + j < textItems.length) {
+                    if (textItems[i + j].str != "KÖYÜ" && textItems[i + j].str != "MAHALLESİ") {
+                        cells.push(textItems[i + j].str);
+                    }
+                    j++;
+                }
+                cells.push(textItems[i + j].str);
+                i = i + j;
+
+                var person = {
+                    id: cells[0],
+                    sira: cells[0],
+                    cinsiyet: cells[1],
+                    olumTarihi: cells[cells.length - 1],
+                    durumu: cells[cells.length - 2],
+                    medeniHali: cells[cells.length - 3],
+                    ciltHaneBireySiraNo: cells[cells.length - 4],
+                    mahalleKoy: cells[cells.length - 5],
+                    ilce: cells[cells.length - 6],
+                    il: cells[cells.length - 7],
+                    dogumTarihi: cells[cells.length - 8],
+                    dogumYeri: cells[cells.length - 9],
+                    anaAdi: cells[cells.length - 10],
+                    babaAdi: cells[cells.length - 11],
+                    soyadi: cells[cells.length - 12],
+                    adi: cells[cells.length - 13],
+                    yakinlik: "",
+                    level: 0
+                }
+
+                for (var k = 0; k < cells.length - 15; k++) {
+                    person.yakinlik += " " + cells[2 + k];
+                }
+
+                person.yakinlik = person.yakinlik.trim();
+                people.push(person);
+            }
+        }
+
+        var nodes = [];
+        var edges = [];
+        for (var i = 0; i < people.length; i++) {
+            createNodesAndEdges(people[i], people, nodes, edges)
+        }
+
+        // adjust level
+        var maxLevel = 0;
+        var minLevel = 0;
+        for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].level > maxLevel) {
+                maxLevel = nodes[i].level;
+            }
+            if (nodes[i].level < minLevel) {
+                minLevel = nodes[i].level;
+            }
+        }
+
+        nodes.forEach(function (node) {
+            node.level = maxLevel - node.level;
+            if (node.yakinlik.startsWith("Babası")) {
+                node.group = "baba";
+            }
+            else if (node.yakinlik.startsWith("Annesi")) {
+                node.group = "anne";
+            }
+            else {
+                node.group = "baba";
+            }
+        });
+
+        edges.forEach(function (edge) {
+            if (edge.yakinlik.startsWith("Annesi")) {
+                edge.color = { color: "#ff8080" };
+            }
+        });
+
+        nodes = nodes.sort(function (node1, node2) {
+            if (node1.level != node2.level) {
+                return node1.level - node2.level;
+            }
+            else {
+                var yakinlikComps1 = node1.yakinlik.split(' ');
+                var yakinlikComps2 = node2.yakinlik.split(' ');
+                for (var i = 0; i < yakinlikComps1.length; i++) {
+                    if (yakinlikComps1[i].startsWith("Annesi") && (yakinlikComps2[i].startsWith("Babası"))) {
+                        return -1;
+                    }
+                    else if (yakinlikComps1[i].startsWith("Babası") && (yakinlikComps2[i].startsWith("Annesi"))) {
+                        return 1;
+                    }
+                    else if (yakinlikComps1[i].startsWith("Kızı") && (yakinlikComps2[i].startsWith("Oğlu"))) {
+                        return -1;
+                    }
+                    else if (yakinlikComps1[i].startsWith("Oğlu") && (yakinlikComps2[i].startsWith("Kızı"))) {
+                        return 1;
+                    }
+                }
+
+                return 0;
+            }
+        });
+
+        var j = 0;
+        var currentLevel = 0;
+        var fatherGroupIndex = 0;
+        var fatherGroupOffset = 0;
+        var fatherGroupStart = 0;
+        var motherLevels = [0];
+        var fatherLevels = [0];
+
+        for (var i = 0; i < nodes.length; i++) {
+            if (currentLevel != nodes[i].level) {
+                j = 0;
+                currentLevel = nodes[i].level;
+                motherLevels.push(0);
+                fatherLevels.push(0);
+            }
+            if (nodes[i].group == "anne") {
+                if (j * 150 > fatherGroupStart) {
+                    fatherGroupStart = j * 150;
+                }
+
+                motherLevels[currentLevel]++;
+            }
+            else {
+                fatherLevels[currentLevel]++;
+            }
+
+            j++;
+        }
+
+        fatherGroupStart += 200;
+        currentLevel = 0;
+        j = 0;
+        for (var i = 0; i < nodes.length; i++) {
+            if (currentLevel != nodes[i].level) {
+                j = 0;
+                fatherGroupIndex = 0;
+                currentLevel = nodes[i].level;
+            }
+            nodes[i].x = j * 150;
+            if (nodes[i].group == "baba") {
+                if (fatherGroupIndex == 0) {
+                    fatherGroupOffset = fatherGroupStart - (j * 150);
+                }
+                nodes[i].x = fatherGroupOffset + (j * 150);
+                fatherGroupIndex++;
+            }
+            nodes[i].y = (nodes[i].level + 1) * 100;
+            j++;
+        }
+
+        j = 0;
+        currentLevel = 0;
+        var maxMotherLevelLength = motherLevels.slice(0).sort(function (a, b) { return a - b })[motherLevels.length - 1];
+        var maxFatherLevelLength = fatherLevels.slice(0).sort(function (a, b) { return a - b })[fatherLevels.length - 1];
+        for (var i = 0; i < nodes.length; i++) {
+            if (currentLevel != nodes[i].level) {
+                j = 0;
+                currentLevel = nodes[i].level;
+            }
+            if (nodes[i].group == "anne") {
+                var levelLength = motherLevels[currentLevel];
+                if (levelLength != maxMotherLevelLength) {
+                    //adjust x
+                    nodes[i].x += 150 * (maxMotherLevelLength - levelLength) / 2;
+                }
+            }
+            else {
+                var levelLength = fatherLevels[currentLevel];
+                if (levelLength != maxFatherLevelLength) {
+                    //adjust x
+                    nodes[i].x += 150 * (maxFatherLevelLength - levelLength) / 2;
+                }
+            }
+        }
+
+        drawNetwork('family-network', nodes, edges, '500px');
+        $("#family-network").show();
+        $("#network-info").show();
+        exportedNetwork = drawNetwork('export-container', nodes, edges, '1000px');
+        $("#preloader").hide();
+        window.scrollTo(0, $("#family-network").offset().top - 100);
+    }
 
     function drawNetwork(element, nodes, edges, height) {
         var container = document.getElementById(element);
@@ -414,16 +424,16 @@ $(document).ready(function () {
         return isLifeStatus(textItems[i - 1].str) && (isDate(textItems[i].str) || textItems[i].str == "-");
     }
 
-    function createLabel(name, birthPlace, dateOfBirth, dateOfDeath){
+    function createLabel(name, birthPlace, dateOfBirth, dateOfDeath) {
         var label = "*" + name + "*";
-        if(!!birthPlace && birthPlace != "-"){
+        if (!!birthPlace && birthPlace != "-") {
             label += "\n" + birthPlace + "";
         }
-        if(!!dateOfBirth  && dateOfBirth != "-"){
+        if (!!dateOfBirth && dateOfBirth != "-") {
             var comps = dateOfBirth.split('/');
             label += "\n(" + comps[comps.length - 1];
 
-            if(!!dateOfDeath && dateOfDeath != "-"){
+            if (!!dateOfDeath && dateOfDeath != "-") {
                 comps = dateOfDeath.split('/')
                 label += "-" + comps[comps.length - 1];
             }
