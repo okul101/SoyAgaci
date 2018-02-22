@@ -149,6 +149,23 @@ $(document).ready(function () {
                     var currentLevel = 0;
                     var fatherGroupIndex = 0;
                     var fatherGroupOffset = 0;
+                    var fatherGroupStart = 0;
+                    for (var i = 0; i < nodes.length; i++) {
+                        if (currentLevel != nodes[i].level) {
+                            j = 0;
+                            currentLevel = nodes[i].level;
+                        }
+                        if (nodes[i].group == "anne") {
+                            if(j * 150 > fatherGroupStart){
+                                fatherGroupStart = j * 150;
+                            }
+                        }
+
+                        j++;
+                    }
+
+                    currentLevel = 0;
+
                     for (var i = 0; i < nodes.length; i++) {
                         if (currentLevel != nodes[i].level) {
                             j = 0;
@@ -158,7 +175,7 @@ $(document).ready(function () {
                         nodes[i].x = j * 150;
                         if (nodes[i].group == "baba") {
                             if (fatherGroupIndex == 0) {
-                                fatherGroupOffset = 1500 - (j * 150);
+                                fatherGroupOffset = fatherGroupStart - (j * 150);
                             }
                             nodes[i].x = fatherGroupOffset + (j * 150);
                             fatherGroupIndex++;
