@@ -54,6 +54,7 @@ $(document).ready(function () {
             return value.str != " ";
         });
 
+        console.log(textItems);
         for (var i = 0; i < textItems.length; i++) {
             // satır başlangıcını tespit et
             if (isNewRow(i, textItems)) {
@@ -67,7 +68,10 @@ $(document).ready(function () {
                     }
                     j++;
                 }
-                cells.push(textItems[i + j].str);
+
+                if(textItems.length > i + j){
+                    cells.push(textItems[i + j].str);
+                }
                 i = i + j;
 
                 var person = {
@@ -91,11 +95,23 @@ $(document).ready(function () {
                     level: 0
                 }
 
+                var mismatchedCells = 0;
                 for (var k = 0; k < cells.length - 15; k++) {
-                    person.yakinlik += " " + cells[2 + k];
+                    if(isRelationType(cells[2+k])){
+                        person.yakinlik += " " + cells[2 + k];
+                    }
+                    else{
+                        mismatchedCells++;
+                    }
+                }
+
+                if(mismatchedCells > 0){
+                    person.adi = cells[cells.length - 13 - mismatchedCells];
                 }
 
                 person.yakinlik = person.yakinlik.trim();
+
+
                 people.push(person);
             }
         }
