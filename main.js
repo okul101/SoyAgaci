@@ -164,6 +164,7 @@ $(document).ready(function () {
                         j++;
                     }
 
+                    fatherGroupStart += 200;
                     currentLevel = 0;
 
                     for (var i = 0; i < nodes.length; i++) {
