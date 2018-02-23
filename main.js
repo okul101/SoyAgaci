@@ -41,7 +41,15 @@ $(document).ready(function () {
                 console.error(reason);
             });
         };
-        fileReader.readAsArrayBuffer(file);
+
+        try{
+            fileReader.readAsArrayBuffer(file);
+        }
+        catch(err){
+            console.error(err);
+            $("#preloader").hide();
+            alert("Üzgünüz, dosyanız okunamadı");
+        }
     });
 
     function processPdfAndDraw(pageItems) {
@@ -54,7 +62,6 @@ $(document).ready(function () {
             return value.str != " ";
         });
 
-        console.log(textItems);
         for (var i = 0; i < textItems.length; i++) {
             // satır başlangıcını tespit et
             if (isNewRow(i, textItems)) {
