@@ -29,6 +29,7 @@ $(document).ready(function () {
                 Promise.all(pagesPromises).then(function (pageItems) {
                     try {
                         processPdfAndDraw(pageItems);
+                        $("#preloader").hide();
                     }
                     catch (err) {
                         $("#preloader").hide();
@@ -58,9 +59,6 @@ $(document).ready(function () {
         for (var i = 0; i < pageItems.length; i++) {
             textItems = textItems.concat(pageItems[i]);
         }
-        textItems = textItems.filter(function (value) {
-            return value.str != " ";
-        });
 
         for (var i = 0; i < textItems.length; i++) {
             // satır başlangıcını tespit et
@@ -121,6 +119,11 @@ $(document).ready(function () {
 
                 people.push(person);
             }
+        }
+
+        if(people.length == 0){
+            alert("Üzgünüz, dosyanız okunamadı.\r\nYüklemiş olduğunuz dosya metin bazlı değil.");
+            return;
         }
 
         var nodes = [];
