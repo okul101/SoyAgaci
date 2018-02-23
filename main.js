@@ -126,7 +126,7 @@ $(document).ready(function () {
         }
 
         if(people.length == 0){
-            alert("Üzgünüz, dosyanız okunamadı.\r\nYüklemiş olduğunuz dosya metin bazlı değil.");
+            alert("Üzgünüz, dosyanız metin bazlı olmadığı için okunamadı.\r\ne-Devlet alt-üst soy bilgisi sorgulama ekranında YAZDIR tuşunu kullanarak yeni bir çıktı alın.");
             return;
         }
 
