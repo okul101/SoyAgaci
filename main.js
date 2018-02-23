@@ -60,6 +60,10 @@ $(document).ready(function () {
             textItems = textItems.concat(pageItems[i]);
         }
 
+        textItems = textItems.filter(function (value) {
+            return value.str != " ";
+        });
+
         for (var i = 0; i < textItems.length; i++) {
             // satır başlangıcını tespit et
             if (isNewRow(i, textItems)) {
